@@ -1,0 +1,718 @@
+﻿<!doctype html>
+<html lang="bs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parking mjesta za osobe sa invaliditetom - Tesanj</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.fullscreen@3.0.0/Control.FullScreen.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --surface: #ffffff;
+        --text: #10243e;
+        --muted: #4c5f78;
+        --primary: #0b6fa4;
+        --primary-dark: #09577f;
+        --accent: #27a36a;
+        --border: #d8e1ec;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Poppins, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 15% 10%, #dcecfb 0%, transparent 30%),
+          radial-gradient(circle at 85% 20%, #d9f5e8 0%, transparent 28%),
+          var(--bg);
+        min-height: 100vh;
+      }
+
+      #masthead {
+        background-color: #0b2a06;
+        color: #fff;
+      }
+
+      .masthead-inner {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+
+      .logo-and-options {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 0 8px;
+        background-color: #0b2a06;
+      }
+
+      .logo-and-options .logo {
+        display: block;
+        width: 229px;
+        height: 60px;
+        text-indent: -9999px;
+        overflow: hidden;
+        background: url("https://opcina-tesanj.ba/wp-content/themes/opcina-tesanj/img/logo.svg")
+          no-repeat center center;
+        background-size: 229px 60px;
+      }
+
+      .navigation-box {
+        background-color: #0b2a06;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .navigation-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 52px;
+      }
+
+      .nav-left,
+      .nav-right,
+      .header-nav,
+      .header-links {
+        display: flex;
+        align-items: center;
+      }
+
+      .header-links {
+        gap: 2px;
+      }
+
+      .mast-link {
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.95rem;
+        padding: 8px 10px;
+        border-bottom: 2px solid transparent;
+        transition: border-color 0.25s ease;
+      }
+
+      .mast-link:hover {
+        border-bottom-color: #f0e43a;
+      }
+
+      .nav-left .mast-link,
+      .nav-right .mast-link {
+        font-size: 0.9rem;
+      }
+
+      .mast-link i {
+        margin-right: 6px;
+      }
+
+      .mast-link.icon-only i {
+        margin-right: 0;
+      }
+
+      .menu-sub-burger {
+        margin-left: 6px;
+      }
+
+      .homelink {
+        margin-left: 4px;
+      }
+
+      .header-nav {
+        flex: 1;
+        justify-content: center;
+      }
+
+      .nav-right {
+        gap: 4px;
+      }
+
+      .container {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 24px 16px 36px;
+      }
+
+      .hero {
+        background: linear-gradient(
+          130deg,
+          #0b6fa4 0%,
+          #134f8b 50%,
+          #1d7b76 100%
+        );
+        color: #fff;
+        border-radius: 16px;
+        padding: 22px;
+        box-shadow: 0 10px 30px rgba(13, 53, 93, 0.2);
+      }
+
+      .hero h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.25rem, 2vw, 1.9rem);
+      }
+
+      .hero p {
+        margin: 0;
+        line-height: 1.5;
+        opacity: 0.96;
+      }
+
+      .section {
+        margin-top: 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 8px 20px rgba(11, 30, 60, 0.06);
+      }
+
+      .section h2 {
+        margin: 0 0 12px;
+        font-size: 1.1rem;
+      }
+
+      .meta {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #bcd3e6;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #f2f8fd;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 660px;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        padding: 10px;
+        font-size: 0.95rem;
+        vertical-align: middle;
+      }
+
+      th {
+        background: #f6fafe;
+        color: #173862;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      tbody tr {
+        transition: background-color 0.2s ease;
+      }
+
+      tbody tr:hover {
+        background-color: #eef6ff;
+      }
+
+      .nav-btn,
+      .global-btn {
+        appearance: none;
+        border: none;
+        border-radius: 10px;
+        background: var(--primary);
+        color: #fff;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      .nav-btn:hover,
+      .global-btn:hover {
+        background: var(--primary-dark);
+      }
+
+      .global-btn {
+        margin-top: 10px;
+        background: var(--accent);
+      }
+
+      .global-btn:hover {
+        background: #1d8858;
+      }
+
+      #map {
+        width: 100%;
+        height: 800px;
+        border-radius: 0;
+        border: none;
+      }
+
+      .help {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+
+      .parking-popup .leaflet-popup-content-wrapper {
+        border: 1px solid #d4e3f1;
+        border-radius: 14px;
+        box-shadow: 0 14px 34px rgba(12, 33, 62, 0.22);
+        background: linear-gradient(165deg, #ffffff 0%, #f4faff 100%);
+        color: var(--text);
+        padding: 0;
+      }
+
+      .parking-popup .leaflet-popup-content {
+        margin: 0;
+        min-width: 220px;
+      }
+
+      .parking-popup .leaflet-popup-close-button {
+        top: 8px;
+        right: 8px;
+        color: #0f3158;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .parking-popup-card {
+        padding: 10px;
+      }
+
+      .parking-popup-title {
+        font-size: 0.96rem;
+        font-weight: 700;
+        line-height: 1.3;
+        margin: 0 0 8px;
+        color: #0f3158;
+      }
+
+      .parking-popup-badge {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #145a8d;
+        background: #e7f3ff;
+        border: 1px solid #c7dff5;
+        border-radius: 999px;
+        padding: 4px 9px;
+        margin-bottom: 8px;
+      }
+
+      .parking-popup img {
+        width: 100%;
+        height: 106px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #d7e7f6;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .popup-route-btn {
+        width: 100%;
+        appearance: none;
+        border: none;
+        border-radius: 9px;
+        background: var(--primary);
+        color: #fff;
+        padding: 8px 10px;
+        font-size: 0.86rem;
+        cursor: pointer;
+      }
+
+      .popup-route-btn:hover {
+        background: var(--primary-dark);
+      }
+
+      @media (max-width: 720px) {
+        .masthead-inner {
+          padding: 0 12px;
+        }
+
+        .navigation-row {
+          min-height: 46px;
+        }
+
+        .logo-and-options {
+          padding: 14px 0 8px;
+        }
+
+        .logo-and-options .logo {
+          width: 190px;
+          height: 50px;
+          background-size: 190px 50px;
+        }
+
+        .header-nav {
+          display: none;
+        }
+
+        .menu-sub-burger {
+          display: none;
+        }
+
+        .container {
+          padding: 14px 12px 24px;
+        }
+
+        #map {
+          height: 340px;
+        }
+
+        .hero {
+          padding: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header id="masthead" role="banner" aria-label="Glavna navigacija">
+      <div class="masthead-inner">
+        <div class="logo-and-options">
+          <a
+            class="logo"
+            href="https://opcina-tesanj.ba/"
+            rel="noopener noreferrer"
+            >Općina Tešanj</a
+          >
+        </div>
+      </div>
+      <div class="navigation-box">
+        <div class="masthead-inner navigation-row">
+          <nav class="header-nav">
+            <div class="header-links">
+              <a
+                class="mast-link"
+                href="https://opcina-tesanj.ba/uprava/opcinski-nacelnik/"
+                rel="noopener noreferrer"
+                >Općinski načelnik</a
+              >
+              <a
+                class="mast-link"
+                href="https://opcina-tesanj.ba/uprava/opcinsko-vijece/"
+                rel="noopener noreferrer"
+                >Općinsko vijeće</a
+              >
+              <a
+                class="mast-link"
+                href="https://opcina-tesanj.ba/mjesne-zajednice/"
+                rel="noopener noreferrer"
+                >Mjesne zajednice</a
+              >
+              <a
+                class="mast-link"
+                href="https://opcina-tesanj.ba/uprava/kontakti/"
+                rel="noopener noreferrer"
+                >Kontakti</a
+              >
+              <a
+                class="mast-link"
+                href="https://opcina-tesanj.ba/podaci-o-opcini/o-tesnju/"
+                rel="noopener noreferrer"
+                >Podaci o općini</a
+              >
+            </div>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <main class="container">
+      <section class="hero">
+        <h1>Parking mjesta za osobe sa invaliditetom - Tesanj</h1>
+        <p>
+          Ova stranica prikazuje dostupna parking mjesta namijenjena osobama sa
+          invaliditetom na podrucju Tesnja. Ispod se nalazi tabela sa lokacijama
+          i interaktivna mapa. Za svaku lokaciju moguce je pokrenuti GPS
+          navodjenje kroz Google Maps.
+        </p>
+      </section>
+
+      <section class="section" aria-labelledby="tbl-title">
+        <h2 id="tbl-title">Pregled parking mjesta RVI</h2>
+        <div class="meta">
+          <span class="badge"
+            ><strong id="total-spaces">0</strong>&nbsp;ukupno mjesta</span
+          >
+          <span class="badge"
+            ><strong id="total-locations">0</strong>&nbsp;lokacija</span
+          >
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Lokacija</th>
+                <th>Adresa</th>
+                <th>Broj mjesta</th>
+                <th>Navigacija</th>
+              </tr>
+            </thead>
+            <tbody id="parking-body"></tbody>
+          </table>
+        </div>
+
+        <button class="global-btn" id="nearest-btn" type="button">
+          GPS do prve lokacije sa liste
+        </button>
+      </section>
+
+      <section class="section" aria-labelledby="map-title">
+        <h2 id="map-title">Mapa parking mjesta RVI</h2>
+        <div
+          id="map"
+          role="img"
+          aria-label="Mapa parking mjesta RVI u Tesnju"
+        ></div>
+        <p class="help">
+          Kliknite marker na mapi za detalje i brzo otvaranje Google Maps
+          navigacije.
+        </p>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="https://unpkg.com/leaflet.fullscreen@3.0.0/Control.FullScreen.js"></script>
+    <script>
+      const parkingSpots = [
+        {
+          name: "Parking Centar za socijalni rad",
+          address: "Tesanj",
+          spaces: 2,
+          coords: [
+            { lat: 44.61287942315309, lng: 17.98990508406151 },
+            { lat: 44.61282500581911, lng: 17.98981254785511 },
+          ],
+        },
+        {
+          name: "Parking natkriveni dio rijeke Tesanjke",
+          address: "Tesanj",
+          spaces: 3,
+          coords: [
+            { lat: 44.612979963430696, lng: 17.987837586523348 },
+            { lat: 44.61308054822788, lng: 17.987582492735452 },
+            { lat: 44.61310080017939, lng: 17.9875578368303 },
+          ],
+        },
+        {
+          name: "Parking dom kulture",
+          address: "Tesanj",
+          spaces: 1,
+          coords: [{ lat: 44.61251979577981, lng: 17.98676462924972 }],
+        },
+        {
+          name: "Parking ispred Opcine Tesanj",
+          address: "Tesanj",
+          spaces: 3,
+          coords: [
+            { lat: 44.61292005712825, lng: 17.98661775194156 },
+            { lat: 44.61289170430591, lng: 17.986583612995965 },
+            { lat: 44.61285743664879, lng: 17.986560964980857 },
+          ],
+        },
+        {
+          name: "Parking Musala",
+          address: "Tesanj",
+          spaces: 1,
+          coords: [{ lat: 44.611158915767255, lng: 17.98707740315828 }],
+        },
+        {
+          name: "Parking Osnovna skola Huso Hodzic",
+          address: "Tesanj",
+          spaces: 1,
+          coords: [{ lat: 44.6084895080743, lng: 17.988068402305032 }],
+        },
+        {
+          name: "Parking Mljekara 1",
+          address: "Tesanj",
+          spaces: 1,
+          coords: [{ lat: 44.615130284947526, lng: 17.98811121572344 }],
+        },
+      ];
+
+      const bodyEl = document.getElementById("parking-body");
+      const totalSpacesEl = document.getElementById("total-spaces");
+      const totalLocationsEl = document.getElementById("total-locations");
+      const nearestBtn = document.getElementById("nearest-btn");
+
+      function openGoogleNavigation(destination, origin) {
+        let url = `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}&travelmode=driving`;
+        if (origin) {
+          url += `&origin=${origin.lat},${origin.lng}`;
+        }
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+
+      function navigateToCoordinate(coord) {
+        if (!navigator.geolocation) {
+          openGoogleNavigation(coord);
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const origin = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+            };
+            openGoogleNavigation(coord, origin);
+          },
+          () => {
+            openGoogleNavigation(coord);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 6000,
+            maximumAge: 0,
+          },
+        );
+      }
+
+      function getSpotCenter(spot) {
+        if (!spot || !spot.coords || !spot.coords.length) return null;
+        const totals = spot.coords.reduce(
+          (acc, coord) => {
+            acc.lat += coord.lat;
+            acc.lng += coord.lng;
+            return acc;
+          },
+          { lat: 0, lng: 0 },
+        );
+        return {
+          lat: totals.lat / spot.coords.length,
+          lng: totals.lng / spot.coords.length,
+        };
+      }
+
+      function navigateToSpot(spot) {
+        const center = getSpotCenter(spot);
+        if (!center) return;
+        navigateToCoordinate(center);
+      }
+
+      function renderTable() {
+        let totalSpaces = 0;
+        bodyEl.innerHTML = "";
+
+        parkingSpots.forEach((spot, idx) => {
+          totalSpaces += spot.spaces;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+          <td>${spot.name}</td>
+          <td>${spot.address}</td>
+          <td>${spot.spaces}</td>
+          <td><button type="button" class="nav-btn" data-index="${idx}">Prikaži rutu</button></td>
+        `;
+          bodyEl.appendChild(row);
+        });
+
+        totalSpacesEl.textContent = String(totalSpaces);
+        totalLocationsEl.textContent = String(parkingSpots.length);
+
+        bodyEl.addEventListener("click", (event) => {
+          const btn = event.target.closest("button[data-index]");
+          if (!btn) return;
+          const spot = parkingSpots[Number(btn.dataset.index)];
+          if (spot) navigateToSpot(spot);
+        });
+      }
+
+      function initMap() {
+        const map = L.map("map", { fullscreenControl: true }).setView(
+          [44.6127, 17.9878],
+          15,
+        );
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        }).addTo(map);
+
+        const bounds = [];
+
+        parkingSpots.forEach((spot) => {
+          const center = getSpotCenter(spot);
+          if (!center) return;
+
+          const marker = L.marker([center.lat, center.lng]).addTo(map);
+          marker.bindPopup(
+            `
+            <div class="parking-popup-card">
+              <p class="parking-popup-title">${spot.name}</p>
+              <span class="parking-popup-badge">Mjesta RVI: ${spot.spaces}</span>
+              <img src="parking dom kulture.jpg" alt="${spot.name}" />
+              <button type="button" class="popup-route-btn" onclick="window.navigateToSpotByCoord(${center.lat}, ${center.lng})">
+                Prikaži rutu
+              </button>
+            </div>
+          `,
+            {
+              className: "parking-popup",
+              closeButton: true,
+              autoPan: true,
+              autoPanPaddingTopLeft: [0, 120],
+              autoPanPaddingBottomRight: [0, 20],
+              offset: [0, -14],
+            },
+          );
+          bounds.push([center.lat, center.lng]);
+        });
+
+        if (bounds.length > 1) {
+          map.fitBounds(bounds, { padding: [25, 25] });
+        }
+      }
+
+      window.navigateToSpotByCoord = (lat, lng) => {
+        navigateToCoordinate({ lat, lng });
+      };
+
+      nearestBtn.addEventListener("click", () => {
+        if (parkingSpots[0]) navigateToSpot(parkingSpots[0]);
+      });
+
+      renderTable();
+      initMap();
+    </script>
+  </body>
+</html>
